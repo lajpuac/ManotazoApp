@@ -72,12 +72,13 @@ public class frmMain extends javax.swing.JFrame {
         @Override
         public void run(){
             try {
-                mutex.acquire();
             System.out.println("Jugador " + this.numero + " listo para jugar");
             System.out.println("Jugador " + this.numero + " está atento al mazo");
             while(!intento) {
                 if (generador.getNumeroCarta() == 5) {
                     manotazo();
+                    
+                    mutex.acquire();
                     System.out.println("Jugador " + this.numero + " entrando a la región crítica");
                     ordenJugadores[contadorJugadores] = "Jugador " + String.valueOf(numero);
                     DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
@@ -88,9 +89,10 @@ public class frmMain extends javax.swing.JFrame {
                     System.out.println("Jugador " + this.numero + " saliendo de la región crítica");
                     intento = true;
                     System.out.println("Jugador " + this.numero + " esperando resultados");
+                    mutex.release();
                 }
                 try {
-                    Thread.sleep(100);
+                    Thread.sleep(10);
                     //mutex.acquire();
                 } catch (InterruptedException ex) {
                     Logger.getLogger(frmMain.class.getName()).log(Level.SEVERE, null, ex);
@@ -135,8 +137,6 @@ public class frmMain extends javax.swing.JFrame {
     
         @Override    
         public void run() {
-            try {
-                mutex.acquire();
             System.out.println("--------------INICIO------------------------");
             System.out.println("Preparando el juego");
             System.out.println("Barajeando...");
@@ -171,14 +171,8 @@ public class frmMain extends javax.swing.JFrame {
             tblResultados.setModel(model);
             btnJugar.setText("Jugar de nuevo");
             btnJugar.setEnabled(true);
-            System.out.println("--------------FIN------------------------\n");
-            
-           }catch (InterruptedException e) {
-                e.printStackTrace();
-            } 
-        }
-   
-        
+            System.out.println("--------------FIN------------------------\n");        
+        }     
         public int getNumeroCarta() {
             return numeroCarta;
         }
@@ -296,8 +290,13 @@ public class frmMain extends javax.swing.JFrame {
         generador = new Uno();
         //generador.comenzar_juego();
         //HiloA.start();
+        generador.start();
+        
+        player1 = new Jugador(1);
         player1.start();
+        player2 = new Jugador(2);
         player2.start();
+        player3 = new Jugador(3);  
         player3.start();
         btnJugar.setEnabled(false);
     }//GEN-LAST:event_btnJugarActionPerformed
