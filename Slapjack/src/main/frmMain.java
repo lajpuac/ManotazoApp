@@ -9,6 +9,7 @@ import java.awt.Image;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
@@ -30,7 +31,9 @@ public class frmMain extends javax.swing.JFrame {
     private Jugador player3;
     String[] columnNames = {"Puesto", "Jugador", "Tiempo"};
     DefaultTableModel model = new DefaultTableModel(columnNames, 0);
-
+    //Implementacion de semaforo
+    private static Semaphore mutex = new Semaphore(1, true);
+    Thread HiloA;
     /**
      * Creates new form frmMain
      */
@@ -68,6 +71,8 @@ public class frmMain extends javax.swing.JFrame {
         
         @Override
         public void run(){
+            try {
+                mutex.acquire();
             System.out.println("Jugador " + this.numero + " listo para jugar");
             System.out.println("Jugador " + this.numero + " está atento al mazo");
             while(!intento) {
@@ -85,10 +90,15 @@ public class frmMain extends javax.swing.JFrame {
                     System.out.println("Jugador " + this.numero + " esperando resultados");
                 }
                 try {
-                    Thread.sleep(10);
+                    Thread.sleep(100);
+                    //mutex.acquire();
                 } catch (InterruptedException ex) {
                     Logger.getLogger(frmMain.class.getName()).log(Level.SEVERE, null, ex);
                 }
+                mutex.release();
+            }
+            }catch (InterruptedException e) {
+                e.printStackTrace();
             }
         }
         
@@ -122,12 +132,15 @@ public class frmMain extends javax.swing.JFrame {
             model = new DefaultTableModel(columnNames, 0);
         }
         
+    
+            
         public void comenzar_juego(){
             System.out.println("--------------INICIO------------------------");
             System.out.println("Preparando el juego");
             System.out.println("Barajeando...");
             System.out.println("Mazo listo para el juego");
             btnJugar.setText("Jugando...");
+          
             while(numeroCarta != 5) {
                 try {
                     Thread.sleep(1000);
@@ -150,12 +163,15 @@ public class frmMain extends javax.swing.JFrame {
                 rowdata = new Object[] {ordenLugares[i], ordenJugadores[i], ordenTiempos[i]};
                 model.addRow(rowdata);
             }
+            
             tblResultados.setModel(model);
             btnJugar.setText("Jugar de nuevo");
             btnJugar.setEnabled(true);
             System.out.println("--------------FIN------------------------\n");
+            
         }
-
+   
+        
         public int getNumeroCarta() {
             return numeroCarta;
         }
@@ -272,6 +288,7 @@ public class frmMain extends javax.swing.JFrame {
     private void btnJugarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnJugarActionPerformed
         generador = new Uno();
         generador.comenzar_juego();
+        //HiloA.start();
         player1.start();
         player2.start();
         player3.start();
