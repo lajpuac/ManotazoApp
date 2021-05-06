@@ -114,7 +114,7 @@ public class frmMain extends javax.swing.JFrame {
         }
     }
     
-    public class Uno {
+    public class Uno extends Thread {
         private int numeroCarta;
         
         public Uno(){
@@ -133,14 +133,16 @@ public class frmMain extends javax.swing.JFrame {
         }
         
     
-            
-        public void comenzar_juego(){
+        @Override    
+        public void run() {
+            try {
+                mutex.acquire();
             System.out.println("--------------INICIO------------------------");
             System.out.println("Preparando el juego");
             System.out.println("Barajeando...");
             System.out.println("Mazo listo para el juego");
             btnJugar.setText("Jugando...");
-          
+           
             while(numeroCarta != 5) {
                 try {
                     Thread.sleep(1000);
@@ -151,6 +153,8 @@ public class frmMain extends javax.swing.JFrame {
                 Image img = new ImageIcon(this.getClass().getResource("/cards/"+ String.valueOf(numeroCarta) +".png")).getImage();
                 img = img.getScaledInstance(93, 138,  java.awt.Image.SCALE_SMOOTH);
                 lblCarta.setIcon(new ImageIcon(img));
+                
+                mutex.release();
             }
             try {
                 Thread.sleep(2000);
@@ -169,6 +173,9 @@ public class frmMain extends javax.swing.JFrame {
             btnJugar.setEnabled(true);
             System.out.println("--------------FIN------------------------\n");
             
+           }catch (InterruptedException e) {
+                e.printStackTrace();
+            } 
         }
    
         
@@ -287,7 +294,7 @@ public class frmMain extends javax.swing.JFrame {
 
     private void btnJugarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnJugarActionPerformed
         generador = new Uno();
-        generador.comenzar_juego();
+        //generador.comenzar_juego();
         //HiloA.start();
         player1.start();
         player2.start();
